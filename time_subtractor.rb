@@ -16,7 +16,7 @@ def included_range first, second
     included = TimeRange.new(nil, nil)
     included.start_time = second.start_time
     included.end_time = first.end_time <= second.end_time ? first.end_time : second.end_time
-  elsif first.start_time < second.end_time && first.end_time < second.end_time
+  elsif first.start_time < second.end_time
     included = TimeRange.new(nil, nil)
     included.start_time = first.start_time
     included.end_time = first.end_time <= second.end_time ? first.end_time : second.end_time
