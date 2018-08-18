@@ -1,3 +1,5 @@
+require 'time'
+
 class TimeRange
   attr_accessor :start_time, :end_time
   def initialize(start_time, end_time)
@@ -7,7 +9,8 @@ class TimeRange
 end
 
 def included_range first, second
-  included = TimeRange.new(nil, nil)
+  included = nil
+  # return included if (first.end_time < second.start_time or second.end_time < first.start_time)
   if first.start_time <= second.start_time
     if first.end_time >= second.end_time
       included = second
@@ -16,27 +19,46 @@ def included_range first, second
   return included
 end
 
-def subtract_time first_ranges, second_ranges
-  first_ranges.each do |first_range|
-    second_ranges.each do |second_range|
-      to_substract = included_range(first_range, second_range)
-    end
-  end
+def subtract_range first, to_subtract
+  subtracted = TimeRange.new(nil, nil)
+  subtracted.start_time = to_subtract.end_time >= first.start_time ? to_subtract.end_time : first.start_time
+  subtracted.end_time = first.end_time
+  return nil if subtracted.start_time == subtracted.end_time
+  return subtracted
 end
 
-subtract_time = included_range(TimeRange.new(9, 12), TimeRange.new(10, 11))
-puts "#{subtract_time.start_time}-#{subtract_time.end_time}"
-subtract_time = included_range(TimeRange.new(9, 12), TimeRange.new(10, 12))
-puts "#{subtract_time.start_time}-#{subtract_time.end_time}"
-subtract_time = included_range(TimeRange.new(9, 10), TimeRange.new(9, 9.5))
-puts "#{subtract_time.start_time}-#{subtract_time.end_time}"
-subtract_time = included_range(TimeRange.new(9, 10), TimeRange.new(9, 10))
-puts "#{subtract_time.start_time}-#{subtract_time.end_time}"
-subtract_time = included_range(TimeRange.new(9, 9.5), TimeRange.new(9.5, 15))
-puts "#{subtract_time.start_time}-#{subtract_time.end_time}"
+def remove_overlap first_ranges, second_ranges
+  new_range = []
+  first_ranges.each do |first_range|
+    second_ranges.each do |second_range|
+      to_subtract = included_range(first_range, second_range)
+      if to_subtract
+        subtracted_range = subtract_range(first_range, to_subtract)
+        new_range.push(subtracted_range) if subtracted_range
+      else
+        new_range.push(first_range)
+      end
+    end
+  end
+  return new_range
+end
+ 
+array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 9.5)])
+puts array.inspect
+array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 10)])
+puts array.inspect
+array = remove_overlap([TimeRange.new(9, 9.5)], [TimeRange.new(9.5, 15)])
+puts array.inspect
+array = remove_overlap([TimeRange.new(9, 9.5), TimeRange.new(10, 10.5)], [TimeRange.new(9.25, 10.25)])
+puts array.inspect
 
-# puts included_range({"start" => 9, "end" => 9.5}, {"start" => 10, "end" => 10.5}, {"start" => 9.25, "end" => 10.25})
-# puts included_range({"start" => 9, "end" => 11}, {"start" => 13, "end" => 15}, {"start" => 9, "end" => 9.25}, {"start" => 10, "end" => 10.25}, {"start" => 12.5, "end" => 16})
+# puts Time.parse("15:30")
+# to_subtract = included_range(TimeRange.new(9, 12), TimeRange.new(10, 11)) # -> 9-10, 11-12
+# puts "#{to_subtract.start_time}-#{to_subtract.end_time}"
+# to_subtract = included_range(TimeRange.new(9, 12), TimeRange.new(10, 12))
+# puts "#{to_subtract.start_time}-#{to_subtract.end_time}"
+# to_subtract = included_range(TimeRange.new(9, 12), TimeRange.new(8, 8.5))
+# puts "#{to_subtract.start_time}-#{to_subtract.end_time}"
 
 # parcourir liste 1 
 #   parcourir liste 2
