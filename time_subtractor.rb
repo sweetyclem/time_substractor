@@ -22,8 +22,9 @@ def overlapped_ranges first, second
   return overlapped
 end
 
-# 9-9.5 / 9.5-15
-# overlap 0 -> 9-9.5
+# 9-9.5 / 10-10.5     subtract   9.25-10.25
+# overlap 9.25-9.5 / 10-10.25
+# result -> 9-9.25 / 10.25-10.5
 
 def subtract_range first, to_subtract
   subtracted = []
@@ -48,7 +49,7 @@ def remove_overlap first_ranges, second_ranges
       to_subtract = overlapped_ranges(first_range, second_range)
       if to_subtract.length > 0
         to_subtract.each do |range|
-          new_ranges = subtract_range(first_range, range)
+          new_ranges.push(subtract_range(first_range, range))
         end
       else
         new_ranges.push(first_range)
@@ -57,15 +58,15 @@ def remove_overlap first_ranges, second_ranges
   end
   return new_ranges
 end
-array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 9.5)])
+# array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 9.5)])
 # puts array.inspect
-puts "false 1- should be 9.5-10" if array.length == 0 || array[0].start_time != 9.5 || array[0].end_time != 10
-array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 10)])
+# puts "false 1- should be 9.5-10" if array.length == 0 || array[0].start_time != 9.5 || array[0].end_time != 10
+# array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 10)])
 # puts array.inspect
-puts "false 2- should be empty" if array.length != 0
-array = remove_overlap([TimeRange.new(9, 9.5)], [TimeRange.new(9.5, 15)])
+# puts "false 2- should be empty" if array.length != 0
+# array = remove_overlap([TimeRange.new(9, 9.5)], [TimeRange.new(9.5, 15)])
 # puts array.inspect
-puts "false 3- should be 9-9.5" if !array || array[0].start_time != 9 || array[0].end_time != 9.5
+# puts "false 3- should be 9-9.5" if !array || array[0].start_time != 9 || array[0].end_time != 9.5
 array = remove_overlap([TimeRange.new(9, 9.5), TimeRange.new(10, 10.5)], [TimeRange.new(9.25, 10.25)])
 puts array.inspect
 puts "false 4- should be 9-9.25, 10.25-10.5"  if !array || array[0].start_time != 9 || array[0].end_time != 9.25 || array[1].start_time != 10.25 || array[1].end_time != 10.5
