@@ -19,12 +19,25 @@ def overlapped_ranges first, second
   elsif second.start_time <= first.start_time && first.end_time <= second.end_time
     overlapped.push(first)
   end
+  overlapped.delete_if{|range| range.start_time > range.end_time}
   return overlapped
 end
 
-# 9-9.5 / 10-10.5     subtract   9.25-10.25
-# overlap 9.25-9.5 / 10-10.25
-# result -> 9-9.25 / 10.25-10.5
+[ #<TimeRange:0x000000015261c8 @start_time=9.25, @end_time=11>, 
+  #<TimeRange:0x00000001525f70 @start_time=9, @end_time=10>,
+  #<TimeRange:0x00000001525f48 @start_time=10.25, @end_time=11>,
+  
+  #<TimeRange:0x000000015263f8 @start_time=9, @end_time=11>,
+  #<TimeRange:0x000000015263d0 @start_time=13, @end_time=15>,
+  #<TimeRange:0x000000015263d0 @start_time=13, @end_time=15>]
+
+
+# 9-11, 13-15 subtract 9-9.25, 10-10.25, 12.5-16
+# subtract 9-11 / 9-9.25 -> 9.25-11
+# subtract 9-11 / 10-10.25 -> 9-10 et 10.25-11
+# subtract 13-15 / 13-15 -> []
+# result 
+# should be 
 
 def subtract_range first, to_subtract
   subtracted = []
@@ -39,6 +52,8 @@ def subtract_range first, to_subtract
     return subtracted
   end
   subtracted.delete_if{|range| range.start_time == range.end_time}
+  puts "first : #{first.start_time}-#{first.end_time} / to_subtract : #{to_subtract.start_time}-#{to_subtract.end_time}"
+  puts "subtracted -> #{subtracted[0].start_time}-#{subtracted[0].end_time}" if subtracted.length > 0
   return subtracted
 end
 
@@ -58,18 +73,18 @@ def remove_overlap first_ranges, second_ranges
   end
   return new_ranges
 end
-array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 9.5)])
+# array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 9.5)])
 # puts array.inspect
-puts "false 1- should be 9.5-10" if array.length == 0 || array[0].start_time != 9.5 || array[0].end_time != 10
-array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 10)])
+# puts "false 1- should be 9.5-10" if array.length == 0 || array[0].start_time != 9.5 || array[0].end_time != 10
+# array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 10)])
 # puts array.inspect
-puts "false 2- should be empty" if array.length != 0
-array = remove_overlap([TimeRange.new(9, 9.5)], [TimeRange.new(9.5, 15)])
+# puts "false 2- should be empty" if array.length != 0
+# array = remove_overlap([TimeRange.new(9, 9.5)], [TimeRange.new(9.5, 15)])
 # puts array.inspect
-puts "false 3- should be 9-9.5" if !array || array[0].start_time != 9 || array[0].end_time != 9.5
-array = remove_overlap([TimeRange.new(9, 9.5), TimeRange.new(10, 10.5)], [TimeRange.new(9.25, 10.25)])
+# puts "false 3- should be 9-9.5" if !array || array[0].start_time != 9 || array[0].end_time != 9.5
+# array = remove_overlap([TimeRange.new(9, 9.5), TimeRange.new(10, 10.5)], [TimeRange.new(9.25, 10.25)])
 # puts array.inspect
-puts "false 4- should be 9-9.25, 10.25-10.5"  if !array || array[0].start_time != 9 || array[0].end_time != 9.25 || array[1].start_time != 10.25 || array[1].end_time != 10.5
+# puts "false 4- should be 9-9.25, 10.25-10.5"  if !array || array[0].start_time != 9 || array[0].end_time != 9.25 || array[1].start_time != 10.25 || array[1].end_time != 10.5
 array = remove_overlap([TimeRange.new(9, 11), TimeRange.new(13, 15)], [TimeRange.new(9, 9.25), TimeRange.new(10, 10.25), TimeRange.new(12.5, 16)])
 puts array.inspect
 puts "false 5- should be 9.25-10, 10.25-11" if !array || array[0].start_time != 9.25 || array[0].end_time != 10 || array[1].start_time != 10.25 || array[1].end_time != 11
