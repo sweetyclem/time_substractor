@@ -23,15 +23,6 @@ def overlapped_ranges first, second
   return overlapped
 end
 
-[ #<TimeRange:0x000000015261c8 @start_time=9.25, @end_time=11>, 
-  #<TimeRange:0x00000001525f70 @start_time=9, @end_time=10>,
-  #<TimeRange:0x00000001525f48 @start_time=10.25, @end_time=11>,
-  
-  #<TimeRange:0x000000015263f8 @start_time=9, @end_time=11>,
-  #<TimeRange:0x000000015263d0 @start_time=13, @end_time=15>,
-  #<TimeRange:0x000000015263d0 @start_time=13, @end_time=15>]
-
-
 # 9-11, 13-15 subtract 9-9.25, 10-10.25, 12.5-16
 # subtract 9-11 / 9-9.25 -> 9.25-11
 # subtract 9-11 / 10-10.25 -> 9-10 et 10.25-11
@@ -52,8 +43,6 @@ def subtract_range first, to_subtract
     return subtracted
   end
   subtracted.delete_if{|range| range.start_time == range.end_time}
-  puts "first : #{first.start_time}-#{first.end_time} / to_subtract : #{to_subtract.start_time}-#{to_subtract.end_time}"
-  puts "subtracted -> #{subtracted[0].start_time}-#{subtracted[0].end_time}" if subtracted.length > 0
   return subtracted
 end
 
@@ -66,7 +55,7 @@ def remove_overlap first_ranges, second_ranges
         to_subtract.each do |range|
           subtract_range(first_range, range).each{|subtracted_range| new_ranges.push(subtracted_range)}
         end
-      else
+      elsif first_range.end_time == second_range.start_time
         new_ranges.push(first_range)
       end
     end
