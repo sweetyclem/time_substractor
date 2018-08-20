@@ -2,6 +2,22 @@ require 'time'
 require_relative './time_range.rb'
 
 class TimeSubtractor
+  def self.to_time_ranges ranges
+    float_ranges = []
+    ranges.each do |range|
+      float_ranges.push(TimeRange.new(range["start"].to_f, range["end"].to_f))
+    end
+    return float_ranges
+  end
+  
+  def self.to_time ranges
+    str_ranges = []
+    ranges.each do |range|
+      str_ranges.push({"start" => Time.at(range.start_time), "end" => Time.at(range.end_time)})
+    end
+    return str_ranges
+  end
+  
   def self.overlapped_ranges first, second
     overlapped = []
     if second.start_time >= first.start_time && first.end_time >= second.end_time
@@ -65,5 +81,9 @@ class TimeSubtractor
       end
     end
     return new_ranges
+  end
+  
+  def self.subtract first_ranges, second_ranges
+    return to_time(remove_overlap(to_time_ranges(first_ranges), to_time_ranges(second_ranges)))
   end
 end
