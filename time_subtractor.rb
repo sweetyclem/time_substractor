@@ -23,13 +23,6 @@ def overlapped_ranges first, second
   return overlapped
 end
 
-# 9-11, 13-15 subtract 9-9.25, 10-10.25, 12.5-16
-# subtract 9-11 / 9-9.25 -> 9.25-11
-# subtract 9-11 / 10-10.25 -> 9-10 et 10.25-11
-# subtract 13-15 / 13-15 -> []
-# result 
-# should be 
-
 def subtract_range first, to_subtract
   subtracted = []
   if to_subtract.start_time >= first.start_time && first.end_time >= to_subtract.end_time
@@ -46,36 +39,59 @@ def subtract_range first, to_subtract
   return subtracted
 end
 
+# 9-11, 13-15 subtract 9-9.25, 10-10.25, 12.5-16
+# subtract 9-11 / 9-9.25 -> 9.25-11
+# subtract 9.25-11 / 10-10.25 -> 9.25-10 et 10.25-11
+# subtract 13-15 / 13-15 -> []
+# should be 9.25-10, 10.25-11
+
 def remove_overlap first_ranges, second_ranges
   new_ranges = []
   first_ranges.each do |first_range|
-    second_ranges.each do |second_range|
+    if second_ranges.length == 1
+      second_range = second_ranges[0]
       to_subtract = overlapped_ranges(first_range, second_range)
       if to_subtract.length > 0
-        to_subtract.each do |range|
-          subtract_range(first_range, range).each{|subtracted_range| new_ranges.push(subtracted_range)}
+        to_subtract.each do |range_to_subtract|
+          subtract_range(first_range, range_to_subtract).each{|subtracted_range| new_ranges.push(subtracted_range)}
         end
       elsif first_range.end_time == second_range.start_time
         new_ranges.push(first_range)
+      end
+    else
+      subtracted_first = first_range
+      second_ranges.each_with_index do |second_range, index|
+        to_subtract = overlapped_ranges(first_range, second_range)
+        if to_subtract.length > 0
+          to_subtract.each do |range_to_subtract|
+            subtracted_ranges = subtract_range(subtracted_first, range_to_subtract)
+            subtracted_first = subtracted_ranges[0] if subtracted_ranges.length == 1
+            subtracted_ranges.each do |subtracted_range|
+              new_ranges.push(subtracted_range) if index == (second_ranges.length - 1) || second_ranges[index +1].start_time > first_range.end_time
+            end
+          end
+        elsif first_range.end_time == second_range.start_time
+          new_ranges.push(first_range)
+        end
       end
     end
   end
   return new_ranges
 end
-# array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 9.5)])
+array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 9.5)])
 # puts array.inspect
-# puts "false 1- should be 9.5-10" if array.length == 0 || array[0].start_time != 9.5 || array[0].end_time != 10
-# array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 10)])
+puts "false 1- should be 9.5-10" if array.length == 0 || array[0].start_time != 9.5 || array[0].end_time != 10
+array = remove_overlap([TimeRange.new(9, 10)], [TimeRange.new(9, 10)])
 # puts array.inspect
-# puts "false 2- should be empty" if array.length != 0
-# array = remove_overlap([TimeRange.new(9, 9.5)], [TimeRange.new(9.5, 15)])
+puts "false 2- should be empty" if array.length != 0
+array = remove_overlap([TimeRange.new(9, 9.5)], [TimeRange.new(9.5, 15)])
 # puts array.inspect
-# puts "false 3- should be 9-9.5" if !array || array[0].start_time != 9 || array[0].end_time != 9.5
-# array = remove_overlap([TimeRange.new(9, 9.5), TimeRange.new(10, 10.5)], [TimeRange.new(9.25, 10.25)])
+puts "false 3- should be 9-9.5" if !array || array[0].start_time != 9 || array[0].end_time != 9.5
+array = remove_overlap([TimeRange.new(9, 9.5), TimeRange.new(10, 10.5)], [TimeRange.new(9.25, 10.25)])
 # puts array.inspect
-# puts "false 4- should be 9-9.25, 10.25-10.5"  if !array || array[0].start_time != 9 || array[0].end_time != 9.25 || array[1].start_time != 10.25 || array[1].end_time != 10.5
+puts "false 4- should be 9-9.25, 10.25-10.5"  if !array || array[0].start_time != 9 || array[0].end_time != 9.25 || array[1].start_time != 10.25 || array[1].end_time != 10.5
 array = remove_overlap([TimeRange.new(9, 11), TimeRange.new(13, 15)], [TimeRange.new(9, 9.25), TimeRange.new(10, 10.25), TimeRange.new(12.5, 16)])
-puts array.inspect
+# puts array.inspect
 puts "false 5- should be 9.25-10, 10.25-11" if !array || array[0].start_time != 9.25 || array[0].end_time != 10 || array[1].start_time != 10.25 || array[1].end_time != 11
 
 # trier les listes
