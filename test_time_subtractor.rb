@@ -2,7 +2,21 @@ require 'minitest/autorun'
 require_relative './time_range.rb'
 require_relative './time_subtractor.rb'
 
-class TestTimeSubtractor < Minitest::Test    
+class TestTimeSubtractor < Minitest::Test
+  def test_to_time_ranges
+    time_ranges = TimeSubtractor.to_time_ranges([{"start" => Time.parse("09:00"), "end" => Time.parse("11:00")}])
+    assert_equal 1, time_ranges.count
+    assert_equal Time.parse("09:00").to_f, time_ranges[0].start_time
+    assert_equal Time.parse("11:00").to_f, time_ranges[0].end_time
+  end
+    
+  def test_to_time
+    times = TimeSubtractor.to_time([TimeRange.new(Time.parse("9:00").to_f, Time.parse("10:00").to_f)])
+    assert_equal 1, times.count
+    assert_equal Time.parse("09:00"), times[0]["start"]
+    assert_equal Time.parse("10:00"), times[0]["end"]
+  end
+    
   def test_overlapped_ranges
     overlapped = TimeSubtractor.overlapped_ranges(
       TimeRange.new(Time.parse("9:00").to_f, Time.parse("10:00").to_f),
