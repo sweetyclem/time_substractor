@@ -4,7 +4,7 @@ This ruby command line program takes two lists of time ranges and returns a new 
 
 ## Start the program
 ```
-ruby ruby main.rb
+ruby main.rb
 ```
 It will output on stdout the result of :
 (9:00-10:00) “minus” (9:00-9:30)
