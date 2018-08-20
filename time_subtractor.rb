@@ -67,6 +67,3 @@ class TimeSubtractor
     return new_ranges
   end
 end
-
-# trier les listes
-# enlever les doublons au début
